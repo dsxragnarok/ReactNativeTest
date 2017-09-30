@@ -5,17 +5,16 @@ import {
   Text,
   View
 } from 'react-native';
-import Switch from './components/Switch';
+import SquareButton from './components/SquareButton';
 import NumberSelect from './components/NumberSelect';
+import DiceBox from './containers/DiceBox';
 
 export default class App extends Component {
-   render () {
-      return (
-         <View>
-            <Text>I am the winner!</Text>
-            <Switch />
-            <NumberSelect min={ 1 } max={ 20 } />
-         </View>
-      );
-   }
+    render () {
+        return (
+            <View style={{ marginTop: 60 }}>
+                <DiceBox rollDiceCallback={() => console.log('roll dice')} />
+            </View>
+        );
+    }
 }
