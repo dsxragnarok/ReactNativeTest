@@ -13,15 +13,10 @@ export default class NumberSelect extends PureComponent {
         max: PropTypes.number.isRequired,
         min: PropTypes.number.isRequired,
         onChange: PropTypes.func,
-        style: PropTypes.object
     }
     static defaultProps = {
         max: 0,
-        min: 0,
-        style: {
-            width: 50,
-            display: 'inline-block'
-        }
+        min: 0
     }
 
     constructor (props) {
@@ -45,12 +40,8 @@ export default class NumberSelect extends PureComponent {
     }
 
     render () {
-        const { id, labelText, labelFixed, min, max, style } = this.props;
-        const range = [...Array(max).keys()].slice(min);
-        const mergedStyle = {
-            ...NumberSelect.defaultProps.style,
-            ...style
-        };
+        const { id, labelText, labelFixed, min, max } = this.props;
+        const range = Array.from({ length: max - min }, (value, index) => index + min);
 
         return (
             <Picker
