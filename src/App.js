@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
-import {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+import { AppRegistry, StyleSheet, Text, View } from 'react-native';
 import { NativeRouter, Route, Link } from 'react-router-native';
+import { createStore, bindActionCreators } from 'redux';
+import { Provider, connect } from 'react-redux';
 import DiceBox from './containers/DiceBox';
+import RollLog from './containers/RollLog';
 import LogView from './components/LogView';
+import reducer from './reducers';
+import { actions } from './actions/log';
+
+const store = createStore(reducer);
 
 const items = [{
     message: 'You rolled 3d6 for 18 [6, 6, 6]'
@@ -18,7 +20,33 @@ const items = [{
 }];
 const diceroll = () => null;
 
-export default class App extends Component {
+function formatDiceRollMessage ({ n, die, modifier, rolls, total }) {
+    const modStr = modifier.toString();
+    const mod = modStr.indexOf('-') === -1 ? `+${ modStr }` : modStr;
+
+    return `You rolled ${n}${die}${mod} = ${ total } ... [${ rolls }]`;
+}
+
+
+export class App extends Component {
+    constructor (props) {
+        super(props);
+
+        this.onDiceRoll = this.onDiceRoll.bind(this);
+    }
+
+    onDiceRoll (result) {
+        const { addLogMessage } = this.props;
+        const message = formatDiceRollMessage(result);
+
+        const payload = {
+            message,
+            timestamp: Date.now(),
+        };
+
+        addLogMessage(payload);
+    }
+
     render () {
         return (
             <NativeRouter>
@@ -39,29 +67,40 @@ export default class App extends Component {
                             <Text>Dice Box</Text>
                         </Link>
                     </View>
-                    <Route
-                        exact path="/"
-                        render={ (props) => <LogView { ...props } items={ items } /> }
-                    />
-                    <Route
-                        path="/dicebox"
-                        render={ (props) => <DiceBox { ...props } rollDiceCallback={ diceroll } /> }
-                    />
+                    <View style={ styles.content }>
+                        <Route
+                            exact path="/"
+                            render={ (props) => <RollLog { ...props } /> }
+                        />
+                        <Route
+                            path="/dicebox"
+                            render={ (props) => <DiceBox { ...props } rollDiceCallback={ this.onDiceRoll } /> }
+                        />
+                    </View>
                 </View>
             </NativeRouter>
         );
     }
 }
 
+const mapStateToProps = () => ({});
+const mapDispatchToProps = (dispatch) => bindActionCreators({ ...actions }, dispatch);
+
+const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
+export default AppWithProvider = () => <Provider store={ store }><ConnectedApp /></Provider>;
+
 const styles = StyleSheet.create({
     container: {
-        marginTop: 60,
-        padding: 10
+        padding: 10,
+        width: '100%',
+        height: '100%',
+        alignItems: 'center'
     },
     header: {
         fontSize: 20
     },
     nav: {
+        marginTop: 60,
         flexDirection: 'row',
         justifyContent: 'space-around'
     },
@@ -69,6 +108,9 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         padding: 10
+    },
+    content: {
+
     },
     subNavItem: {
         padding: 5
