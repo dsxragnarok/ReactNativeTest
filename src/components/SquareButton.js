@@ -14,10 +14,8 @@ export default class SquareButton extends PureComponent {
         const { id, label, onPress } = this.props;
 
         return (
-            <TouchableOpacity onPress={ onPress }>
-                <View style={ styles.container }>
-                    <Text style={ styles.text }>{ label }</Text>
-                </View>
+            <TouchableOpacity style={ styles.container } onPress={ onPress }>
+                <Text style={ styles.text }>{ label }</Text>
             </TouchableOpacity>
         );
     }
