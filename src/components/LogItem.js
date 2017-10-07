@@ -13,9 +13,7 @@ export default class LogItem extends PureComponent {
 
     render () {
         return (
-            <View>
-                <Text>{ this.props.message }</Text>
-            </View>
+            <Text>{ this.props.message }</Text>
         );
     }
 }

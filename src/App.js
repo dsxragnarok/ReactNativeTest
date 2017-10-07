@@ -1,24 +1,17 @@
 import React, { Component } from 'react';
 import { AppRegistry, StyleSheet, Text, View } from 'react-native';
-import { NativeRouter, Route, Link } from 'react-router-native';
+import { NativeRouter, Route, Link, withRouter } from 'react-router-native';
 import { createStore, bindActionCreators } from 'redux';
 import { Provider, connect } from 'react-redux';
 import DiceBox from './containers/DiceBox';
 import RollLog from './containers/RollLog';
-import LogView from './components/LogView';
 import reducer from './reducers';
 import { actions } from './actions/log';
 
+/**
+ * @todo break this up. -- Throwing a lot in here for now just for quick testing functionalities
+ */
 const store = createStore(reducer);
-
-const items = [{
-    message: 'You rolled 3d6 for 18 [6, 6, 6]'
-}, {
-    message: 'You rolled 2d12 for 24 [12, 12]'
-}, {
-    message: 'You rolled 2d8 for 16 [8, 8]'
-}];
-const diceroll = () => null;
 
 function formatDiceRollMessage ({ n, die, modifier, rolls, total }) {
     const modStr = modifier.toString();
@@ -26,7 +19,6 @@ function formatDiceRollMessage ({ n, die, modifier, rolls, total }) {
 
     return `You rolled ${n}${die}${mod} = ${ total } ... [${ rolls }]`;
 }
-
 
 export class App extends Component {
     constructor (props) {
@@ -36,7 +28,7 @@ export class App extends Component {
     }
 
     onDiceRoll (result) {
-        const { addLogMessage } = this.props;
+        const { addLogMessage, history } = this.props;
         const message = formatDiceRollMessage(result);
 
         const payload = {
@@ -45,40 +37,39 @@ export class App extends Component {
         };
 
         addLogMessage(payload);
+        history.push('/logs');
     }
 
     render () {
         return (
-            <NativeRouter>
-                <View style={ styles.container }>
-                    <View style={ styles.nav }>
-                        <Link
-                            to="/"
-                            underlayColor="#f0f4f7"
-                            style={ styles.navItem }
-                        >
-                            <Text>Log</Text>
-                        </Link>
-                        <Link
-                            to="/dicebox"
-                            underlayColor="#f0f4f7"
-                            style={ styles.navItem }
-                        >
-                            <Text>Dice Box</Text>
-                        </Link>
-                    </View>
-                    <View style={ styles.content }>
-                        <Route
-                            exact path="/"
-                            render={ (props) => <RollLog { ...props } /> }
-                        />
-                        <Route
-                            path="/dicebox"
-                            render={ (props) => <DiceBox { ...props } rollDiceCallback={ this.onDiceRoll } /> }
-                        />
-                    </View>
+            <View style={ styles.container }>
+                <View style={ styles.nav }>
+                    <Link
+                        to="/logs"
+                        underlayColor="#f0f4f7"
+                        style={ styles.navItem }
+                    >
+                        <Text>Log</Text>
+                    </Link>
+                    <Link
+                        to="/"
+                        underlayColor="#f0f4f7"
+                        style={ styles.navItem }
+                    >
+                        <Text>Dice Box</Text>
+                    </Link>
                 </View>
-            </NativeRouter>
+                <View style={ styles.content }>
+                    <Route
+                        exact path="/logs"
+                        render={ (props) => <RollLog { ...props } /> }
+                    />
+                    <Route
+                        exact path="/"
+                        render={ (props) => <DiceBox { ...props } rollDiceCallback={ this.onDiceRoll } /> }
+                    />
+                </View>
+            </View>
         );
     }
 }
@@ -87,7 +78,11 @@ const mapStateToProps = () => ({});
 const mapDispatchToProps = (dispatch) => bindActionCreators({ ...actions }, dispatch);
 
 const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
-export default AppWithProvider = () => <Provider store={ store }><ConnectedApp /></Provider>;
+const AppWithRoute = withRouter(ConnectedApp);
+
+const NativeRouterApp = () => <NativeRouter><AppWithRoute /></NativeRouter>;
+
+export default AppWithProvider = () => <Provider store={ store }><NativeRouterApp /></Provider>;
 
 const styles = StyleSheet.create({
     container: {
